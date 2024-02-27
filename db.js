@@ -6,7 +6,7 @@ console.log(DB_URI);
 mongoose
   .connect(DB_URI)
   .then(() => console.log("Database connection successful"))
-  .catch((e) => {
-    console.log("Database connection error", e);
+  .catch((error) => {
+    console.log("Database connection error", error);
     process.exit(1);
   });
