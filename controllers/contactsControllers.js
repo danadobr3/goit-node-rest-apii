@@ -62,19 +62,19 @@ export const updateContact = async (req, res, next) => {
 };
 
 export const updateStatusContact = async (req, res, next) => {
-    try {
-        const updatedStatus = await contactsService.updateStatusContact(
-            req.params.id,
-            req.body
-        );
-        if (!updatedStatus) {
-            throw HttpError(404, "Not found");
-        }
-        if (Object.keys(req.body).length === 0) {
-            throw HttpError(400, "Body must have at least one field");
-        }
-        res.send(updatedStatus);
-    } catch (error) {
-        next(error);
+  try {
+    const updatedStatus = await contactsService.updateStatusContact(
+      req.params.id,
+      req.body
+    );
+    if (!updatedStatus) {
+      throw HttpError(404, "Not found");
     }
-}
+    if (Object.keys(req.body).length === 0) {
+      throw HttpError(400, "Body must have at least one field");
+    }
+    res.send(updatedStatus);
+  } catch (error) {
+    next(error);
+  }
+};
