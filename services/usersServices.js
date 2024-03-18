@@ -1,6 +1,10 @@
 import bcrypt from "bcrypt";
 import { User } from "../models/users.js";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
+import Jimp from "jimp";
+import * as Path from "node:path";
+import fs from "fs";
 
 const saltRounds = 10;
 
@@ -10,10 +14,12 @@ async function registerUser({ password, email, subscription }) {
     return null;
   }
   const hashPassword = await bcrypt.hash(password, saltRounds);
+  const avatarURL = gravatar.url(email);
   const newUser = await User.create({
     password: hashPassword,
     email,
     subscription,
+    avatarURL,
   });
   console.log(newUser);
   return {
@@ -73,10 +79,32 @@ async function updateSubscription({ id }, { subscription }) {
   }
 }
 
+async function updateAvatar({ id }, { path }) {
+  const avatar = await Jimp.read(path);
+  await avatar.resize(250, 250);
+  const avatarFilename = Date.now() + Path.extname(path);
+  await avatar.writeAsync(`public/avatars/${avatarFilename}`);
+  fs.unlink(path, function (err) {
+    if (err) return console.log(err);
+    console.log("file deleted successfully");
+  });
+  const normalizedAvatar = `/avatars/${avatarFilename}`;
+
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    {
+      avatarURL: normalizedAvatar,
+    },
+    { new: true }
+  );
+  return updatedUser ? { avatarURL: updatedUser.avatarURL } : null;
+}
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
   updateSubscription,
+  updateAvatar,
 };
