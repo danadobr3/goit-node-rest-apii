@@ -68,3 +68,18 @@ export const updateSubscription = async (req, res, next) => {
     next(e);
   }
 };
+
+export const uploadAvatar = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw HttpError(400, "File was not selected");
+    }
+    const newAvatar = await usersService.updateAvatar(req.user, req.file);
+    if (newAvatar === null) {
+      throw HttpError(401, "Unauthorized");
+    }
+    res.send(newAvatar);
+  } catch (e) {
+    next(e);
+  }
+};
