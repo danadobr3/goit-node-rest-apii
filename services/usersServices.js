@@ -18,9 +18,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 const saltRounds = 10;
-
 
 async function registerUser({ password, email, subscription }) {
   const user = await User.findOne({ email });
@@ -30,11 +28,11 @@ async function registerUser({ password, email, subscription }) {
   const hashPassword = await bcrypt.hash(password, saltRounds);
   const avatarURL = gravatar.url(email);
   const verificationToken = uuid();
-    
+
     await transporter.sendMail({
     from: "danadobr3@gmail.com",
     to: email,
-    subject: "Welcome to phonebook",
+    subject: "Welcome to phonebook app",
     text: `To confirm you registration please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
     html: `To confirm you registration please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
   });
@@ -42,6 +40,7 @@ async function registerUser({ password, email, subscription }) {
   const newUser = await User.create({
     password: hashPassword,
     email,
+    verificationToken,
     subscription,
     avatarURL,
   });
@@ -59,10 +58,9 @@ async function loginUser({ email, password }) {
   if (!match) {
     return null;
   }
-     if (user.verify === false) {
+  if (user.verify === false) {
     throw HttpError(401, "Your account is not verified");
-     }
-    
+  }
   const payload = { id: user._id, email, password };
   const secret = process.env.SECRET;
   const token = jwt.sign(payload, secret, { expiresIn: "1h" });
@@ -115,10 +113,9 @@ async function updateAvatar({ id }, { path }) {
     if (err) return console.log(err);
     console.log("file deleted successfully");
   });
+    const normalizedAvatar = `/avatars/${avatarFilename}`;
     
-  const normalizedAvatar = `/avatars/${avatarFilename}`;
-
-  const updatedUser = await User.findByIdAndUpdate(
+     const updatedUser = await User.findByIdAndUpdate(
     id,
     {
       avatarURL: normalizedAvatar,
@@ -148,7 +145,7 @@ async function resendEmail(email) {
   await transporter.sendMail({
     from: "danadobr3@gmail.com",
     to: email,
-    subject: "Welcome to phonebook",
+    subject: "Welcome to phonebook app",
     text: `To confirm you registration please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
     html: `To confirm you registration please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
   });
@@ -156,7 +153,6 @@ async function resendEmail(email) {
     message: "Verification email sent",
   };
 }
-
 
 export default {
   registerUser,
